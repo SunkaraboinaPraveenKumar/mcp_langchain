@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Copilot Chatbot</title>
+    <link rel="stylesheet" href="/static/chat.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; margin: 0; }
+        .chat-container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px #0001; padding: 24px; }
+        .chat-title { font-size: 2rem; font-weight: 600; color: #2d3a4a; margin-bottom: 16px; }
+        .chat-history { min-height: 200px; margin-bottom: 16px; }
+        .chat-message { margin: 8px 0; }
+        .user { color: #1a73e8; font-weight: 500; }
+        .bot { color: #222; }
+        form { display: flex; gap: 8px; }
+        input[type=text] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #cfd8dc; font-size: 1rem; }
+        button { background: #1a73e8; color: #fff; border: none; border-radius: 6px; padding: 10px 18px; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #155ab6; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-title">Copilot Chatbot</div>
+        <div class="chat-history" id="chat-history"></div>
+        <form id="chat-form" autocomplete="off">
+            <input type="text" id="user-input" placeholder="Ask me anything..." required autofocus />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script>
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('user-input');
+        const history = document.getElementById('chat-history');
+        function addMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = 'chat-message ' + sender;
+            div.innerHTML = `<span class="${sender}">${sender === 'user' ? 'You' : 'Copilot'}:</span> ${text}`;
+            history.appendChild(div);
+            history.scrollTop = history.scrollHeight;
+        }
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const userText = input.value;
+            addMessage('user', userText);
+            input.value = '';
+            addMessage('bot', '<em>Thinking...</em>');
+            const resp = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'message=' + encodeURIComponent(userText)
+            });
+            const data = await resp.json();
+            history.lastChild.innerHTML = `<span class="bot">Copilot:</span> ${data.reply}`;
+        };
+    </script>
+</body>
+</html> 
